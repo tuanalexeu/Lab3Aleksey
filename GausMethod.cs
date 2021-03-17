@@ -1,93 +1,124 @@
 using System;
 
 namespace Lab3Aleksey {
-    public class GausMethod 
+    public class GausMethod
+  {
+    public uint RowCount;
+    public uint ColumCount;
+    public double[][] Matrix { get; set; }
+    public double[] RightPart { get; set; }
+    public double[] Answer { get; set; }
+ 
+    public GausMethod(uint Row, uint Colum)
     {
-    private double[,] Matrix;
-        public GausMethod(double [,] matrix)
+      RightPart = new double[Row];
+      Answer = new double[Row];
+      Matrix = new double[Row][];
+      for (int i = 0; i < Row; i++)
+        Matrix[i] = new double[Colum];
+      RowCount = Row;
+      ColumCount = Colum;
+ 
+      //обнулим массив
+      for (int i = 0; i < Row; i++)
+      {
+        Answer[i] = 0;
+        RightPart[i] = 0;
+        for (int j = 0; j < Colum; j++)
+          Matrix[i][j] = 0;
+      }
+    }
+ 
+    private void SortRows(int SortIndex)
+    {
+ 
+      double MaxElement = Matrix[SortIndex][SortIndex];
+      int MaxElementIndex = SortIndex;
+      for (int i = SortIndex + 1; i < RowCount; i++)
+      {
+        if (Matrix[i][SortIndex] > MaxElement)
         {
-            Matrix = matrix;
+          MaxElement = Matrix[i][SortIndex];
+          MaxElementIndex = i;
         }
-        public double[] GetSolution()
+      }
+ 
+      //теперь найден максимальный элемент ставим его на верхнее место
+      if (MaxElementIndex > SortIndex)//если это не первый элемент
+      {
+        double Temp;
+ 
+        Temp = RightPart[MaxElementIndex];
+        RightPart[MaxElementIndex] = RightPart[SortIndex];
+        RightPart[SortIndex] = Temp;
+ 
+        for (int i = 0; i < ColumCount; i++)
         {
-            var answers = new double[4];
-            var coefficients = new double[4, 2];
-            double y, alpha, beta, a = Double.MinValue, b, c, d; //'a' дано значение, чтобы не ругался
-            for (var str = 0; str < 4; str++)
-            {
-                if (str != 0) 
-                    a = Matrix[str, str - 1];
-                b = Matrix[str, str];
-                c = Matrix[str, str + 1];
-                d = Matrix[str, 4];
-
-                if (str == 0)
-                {
-                    y = b;
-                    alpha = -c / y;
-                    beta = d / y;
-                    coefficients[str, 0] = alpha;
-                    coefficients[str, 1] = beta;
-                }
-                else if (str == 3)
-                {
-                    y = b + a * coefficients[str - 1, 0];
-                    beta = (d - a * coefficients[str - 1, 1]) / y;
-                    coefficients[str, 1] = beta;
-                }
-                else
-                {
-                    y = b + a * coefficients[str - 1, 0];
-                    alpha = -c / y;
-                    beta = (d - a * coefficients[str - 1, 1]) / y;
-                    coefficients[str, 0] = alpha;
-                    coefficients[str, 1] = beta;
-                }
-            }
-
-            for (var str = 3; str >= 0; str--)
-            {
-                if (str == 3)
-                    answers[str] = coefficients[str, 1];
-                else
-                    answers[str] = coefficients[str, 0] * answers[str + 1] + coefficients[str, 1];
-            }
-
-            if (AreAnswersCorrect(answers))
-                return answers;
-            else
-                return null;
+          Temp = Matrix[MaxElementIndex][i];
+          Matrix[MaxElementIndex][i] = Matrix[SortIndex][i];
+          Matrix[SortIndex][i] = Temp;
         }
-
-        private bool AreAnswersCorrect(double[] answers)
+      }
+    }
+ 
+    public int SolveMatrix()
+    {
+      if (RowCount != ColumCount)
+        return 1; //нет решения
+ 
+      for (int i = 0; i < RowCount - 1; i++)
+      {
+        SortRows(i);
+        for (int j = i + 1; j < RowCount; j++)
         {
-            double a, b, c, d, r;
-            for (var str = 0; str < 4; str++)
-            {
-                b = Matrix[str, str];
-                d = Matrix[str, 4];
-
-                if (str == 0) 
-                {
-                    c = Matrix[str, str + 1];
-                    r = Math.Round((d - b * answers[str] - c * answers[str + 1]), 5);
-                } 
-                else if (str == 3)
-                {
-                    a = Matrix[str, str - 1];
-                    r = Math.Round((d - (a * answers[str - 1] + b * answers[str])), 5);
-                }
-                else
-                {
-                    a = Matrix[str, str - 1];
-                    c = Matrix[str, str + 1];
-                    r = Math.Round((d - a * answers[str - 1] - b * answers[str] - c * answers[str + 1]), 5);
-                }
-
-                if (r != 0)
-                    return false;
-            } 
-            return true;
+          if (Matrix[i][i] != 0) //если главный элемент не 0, то производим вычисления
+          {
+            double MultElement = Matrix[j][i] / Matrix[i][i];
+            for (int k = i; k < ColumCount; k++)
+              Matrix[j][k] -= Matrix[i][k] * MultElement;
+            RightPart[j] -= RightPart[i] * MultElement;
+          }
+          //для нулевого главного элемента просто пропускаем данный шаг
         }
+      }
+ 
+      //ищем решение
+      for (int i = (int)(RowCount - 1); i >= 0; i--)
+      {
+        Answer[i] = RightPart[i];
+ 
+        for (int j = (int)(RowCount - 1); j > i; j--)
+          Answer[i] -= Matrix[i][j] * Answer[j];
+ 
+        if (Matrix[i][i] == 0)
+          if (RightPart[i] == 0)
+            return 2; //множество решений
+          else
+            return 1; //нет решения
+ 
+        Answer[i] /= Matrix[i][i];
+ 
+      }
+      return 0;
+    }
+ 
+ 
+ 
+    public override String ToString()
+    {
+      String S = "";
+      for (int i = 0; i < RowCount; i++)
+      {
+        S += "\r\n";
+        for (int j = 0; j < ColumCount; j++)
+        {
+          S += Matrix[i][j].ToString("F04") + "\t";
+        }
+ 
+        S += "\t" + Answer[i].ToString("F08");
+        S += "\t" + RightPart[i].ToString("F04");
+      }
+      return S;
+    }
   }
 }
