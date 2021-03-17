@@ -2,8 +2,8 @@ using System;
 
 namespace Lab3Aleksey {
     class TridiagonalMatrixExample {
-        private double[,] Matrix;
-        public TridiagonalMatrixExample(double [,] matrix)
+        private double[][] Matrix;
+        public TridiagonalMatrixExample(double [][] matrix)
         {
             Matrix = matrix;
         }
@@ -11,14 +11,14 @@ namespace Lab3Aleksey {
         {
             var answers = new double[4];
             var coefficients = new double[4, 2];
-            double y, alpha, beta, a = Double.MinValue, b, c, d; //'a' дано значение, чтобы не ругался
+            double y, alpha, beta, a = Double.MinValue, b, c, d;
             for (var str = 0; str < 4; str++)
             {
                 if (str != 0) 
-                    a = Matrix[str, str - 1];
-                b = Matrix[str, str];
-                c = Matrix[str, str + 1];
-                d = Matrix[str, 4];
+                    a = Matrix[str][str - 1];
+                b = Matrix[str][str];
+                c = Matrix[str][str + 1];
+                d = Matrix[str][3];
 
                 if (str == 0)
                 {
@@ -63,23 +63,23 @@ namespace Lab3Aleksey {
             double a, b, c, d, r;
             for (var str = 0; str < 4; str++)
             {
-                b = Matrix[str, str];
-                d = Matrix[str, 4];
+                b = Matrix[str][str];
+                d = Matrix[str][4];
 
                 if (str == 0) 
                 {
-                    c = Matrix[str, str + 1];
+                    c = Matrix[str][str + 1];
                     r = Math.Round((d - b * answers[str] - c * answers[str + 1]), 5);
                 } 
                 else if (str == 3)
                 {
-                    a = Matrix[str, str - 1];
+                    a = Matrix[str][str - 1];
                     r = Math.Round((d - (a * answers[str - 1] + b * answers[str])), 5);
                 }
                 else
                 {
-                    a = Matrix[str, str - 1];
-                    c = Matrix[str, str + 1];
+                    a = Matrix[str][str - 1];
+                    c = Matrix[str][str + 1];
                     r = Math.Round((d - a * answers[str - 1] - b * answers[str] - c * answers[str + 1]), 5);
                 }
 
